@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>Quotes</title>
+    <style>
+        
+    </style>
+</head>
+
+<body>
+    <h1>Build a workflow</h1>
+        <div>
+          <div>
+          <p>Add status</p>
+          <label>
+          <input type="text"  id="new-status-name"/>
+          <button id="submit">
+            add
+          </button>
+        </label>
+        <div id="statuses-list"></div>
+
+    </div>
+    <div>
+     <p>Add transition</p>
+      <label>
+        name:
+                <input type="text" id="transition-name"/>
+                from:
+              <select id="selection-list-one">
+              </select>
+              to:
+              <select id="selection-list-two">
+              </select>
+              <button id="btn-add-transition">add</button>
+       </label>
+       <div id="transitions-list"></div>
+
+    </div>
+    </div>
+  </div>
+  <button id="btn-reset">reset</button>
+</div> 
+</body>
+
+<script>
+    var statuses = [];
+    var transitions = [];
+    async function loadStatuses() {
+        statuses = await axios.get('/api/get-statuses')
+        var ul = document.createElement("ul");
+        ul.setAttribute('id', 'inner-list');
+
+        /*add radio buttons for each 'li'*/
+
+        /* add labels by checking the transitions
+        if needed- create a label element, and name it
+        then save it to an array*/
+
+        for (let i of statuses.data) {
+            let btn = document.createElement("button"); 
+            btn.innerHTML = "remove"; 
+            btn.setAttribute("id", i.name); 
+            li = document.createElement("li"); 
+            li.innerHTML = i.name; 
+            li.appendChild(btn); 
+            ul.appendChild(li); 
+        }
+        myElement.appendChild(ul);
+
+        transitions = await axios.get('/api/get-transitions')
+        var ull = document.createElement("ul");
+        ull.setAttribute('id', 'trans-inner-list');
+        for (let i of transitions.data) {let li = document.createElement("li"); li.innerHTML = i.name+":"+i.from+"->"+i.to; ull.appendChild(li); }
+        transitionList.appendChild(ull);
+
+        for (let i of statuses.data) {var el = document.createElement("option"); el.textContent = i.name; el.value = i.name; firstSelection.appendChild(el);}
+        for (let i of statuses.data) {var el = document.createElement("option"); el.textContent = i.name; el.value = i.name; secondSelection.appendChild(el);}
+    }
+  
+    var myElement = document.getElementById('statuses-list')
+    var transitionList = document.getElementById('transitions-list')
+    var firstSelection = document.getElementById('selection-list-one')
+    var secondSelection = document.getElementById('selection-list-two')
+    btn_like = document.getElementById('btn-reset')
+    btn_like.addEventListener('click', resetList, false)
+    btn_add = document.getElementById('submit')
+    btn_add.addEventListener('click', addtoArr, false)
+    btn_add_transition = document.getElementById('btn-add-transition')
+    btn_add_transition.addEventListener('click', addTransition, false)
+
+    loadStatuses()
+
+
+    function deleteStatus() {
+        /*create references to the buttons.
+        send the status with the relevant request
+        The server will remove the status from the array, and will go over
+        the transitions array and delete the transitions that include the status
+        update the statuses list 
+        update transitions list */
+    }
+
+    function handleRadioSelection(){
+        /*by choosing any button, its label changes to 'init'
+        check in the array of labels which 'li' labeled as init and change it.
+        check in the transitions array what labels should be added
+        and add them to the list. update array*/
+    }
+
+    function addtoArr() {
+        newStatus = document.getElementById('new-status-name')
+        axios.post('/add-new-status', { status: newStatus.value })
+        var list = document.getElementById('inner-list')
+        //check if list exists
+        let li = document.createElement("li"); li.innerHTML = newStatus.value; 
+        let btn = document.createElement("button"); 
+            btn.innerHTML = "remove"; 
+            btn.setAttribute("id", newStatus.value); 
+            li.appendChild(btn); 
+            list.appendChild(li);
+
+        var el = document.createElement("option");
+        el.textContent = newStatus.value;
+        el.value = opt;
+        secondSelection.appendChild(el);
+        newStatus.value = ''
+    }
+
+    function addTransition(){
+       //check validation
+       var transitionName = document.getElementById('transition-name')
+
+        var select = document.getElementById('selection-list-one');
+		var option = statuses.data[select.selectedIndex];
+         var select2 = document.getElementById('selection-list-two');
+		var option2 = statuses.data[select2.selectedIndex]; 
+        axios.post('/add-new-status', { name: transitionName.value, from: option, to: option2 })
+        List = document.getElementById('trans-inner-list')
+        let li = document.createElement("li"); li.innerHTML = transitionName.value+": "+option.name+"->"+option2.name; List.appendChild(li);
+        transitionName.value = ''
+    }
+
+    function resetList(){
+        statuses = transitions = axios.post('/delete-all')
+        var list = document.getElementById('inner-list')
+        var list2 = document.getElementById('trans-inner-list')
+        myElement.removeChild(list)
+        transitionList.removeChild(list2)
+    }
+</script>
+
+</html>
